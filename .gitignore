@@ -1,0 +1,6 @@
+# ignore local build+install directories
+build
+install
+
+.cache
+.vscode
