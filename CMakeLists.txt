@@ -4,14 +4,6 @@ project(bagel
     DESCRIPTION "An everything bagel of C++"
     LANGUAGES CXX)
 
-
-# Sets the library path to lib/ and the include path to include/
-# in the install prefix
-include(GNUInstallDirs)
-
-# Automatically generates export headers
-include(GenerateExportHeader)
-
 ################
 # CONFIG
 ################
@@ -26,11 +18,6 @@ else()
     message(CHECK_FAIL "${BUILD_SHARED_LIBS}")
 endif()
 
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-endif()
-message(STATUS "Setting build type: ${CMAKE_BUILD_TYPE}")
-
 message(CHECK_START "Building shared libraries")
 if(BUILD_SHARED_LIBS)
     message(CHECK_PASS "yes")
@@ -38,9 +25,17 @@ else()
     message(CHECK_FAIL "no")
 endif()
 
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+message(STATUS "Setting build type: ${CMAKE_BUILD_TYPE}")
+
 set(export_header_name "export.hpp")
 set(export_file_name "${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/${export_header_name}")
 
+# Sets the library path to lib/ and the include path to include/
+# in the install prefix
+include(GNUInstallDirs)
 set(cmake_config_dir ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 set(build_tests ${UPPER_PROJECT_NAME}_BUILD_TESTS)
 set(build_examples ${UPPER_PROJECT_NAME}_BUILD_EXAMPLES)
@@ -62,6 +57,11 @@ if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(${PROJECT_NAME} PUBLIC ${UPPER_PROJECT_NAME}_STATIC_DEFINE)
 endif()
 
+include(GenerateExportHeader)
+generate_export_header(${PROJECT_NAME}
+    EXPORT_FILE_NAME ${export_file_name}
+)
+
 if(NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_VISIBILITY_PRESET hidden
@@ -76,10 +76,6 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES
     SOVERSION ${PROJECT_VERSION_MAJOR}
     VERSION ${PROJECT_VERSION}
-)
-
-generate_export_header(${PROJECT_NAME}
-    EXPORT_FILE_NAME ${export_file_name}
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -107,8 +103,6 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}"
 
 install(TARGETS ${PROJECT_NAME}
     EXPORT "${PROJECT_NAME}Targets"
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(EXPORT "${PROJECT_NAME}Targets"
@@ -120,8 +114,8 @@ install(EXPORT "${PROJECT_NAME}Targets"
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    VERSION "${version}"
-    COMPATIBILITY AnyNewerVersion
+    VERSION "${PROJECT_VERSION}"
+    COMPATIBILITY SameMajorVersion
 )
 # create config file
 configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in"
@@ -139,7 +133,7 @@ message(CHECK_START "Building tests")
 if(${build_tests})
     message(CHECK_PASS "yes")
 
-    add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 else()
     message(CHECK_FAIL "no")
 endif()
@@ -148,7 +142,7 @@ message(CHECK_START "Building examples")
 if(${build_examples})
     message(CHECK_PASS "yes")
 
-    add_subdirectory(${PROJECT_SOURCE_DIR}/examples)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/examples)
 else()
     message(CHECK_FAIL "no")
 endif()
