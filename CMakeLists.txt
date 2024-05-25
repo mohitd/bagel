@@ -86,7 +86,10 @@ target_include_directories(${PROJECT_NAME}
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 target_sources(${PROJECT_NAME} PRIVATE
-    src/chrono/timer.cpp)
+    src/chrono/timer.cpp
+    src/dynamic_library.cpp)
+
+target_link_directories(${PROJECT_NAME} PUBLIC ${CMAKE_DL_LIBS})
 
 ################
 # INSTALL

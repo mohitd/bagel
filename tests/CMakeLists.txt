@@ -22,3 +22,17 @@ target_link_libraries(test_timer
 )
 gtest_discover_tests(test_timer)
 
+
+# create example dynamic library to load as part of test
+add_library(dynamic_lib_example dynamic_lib_example.cpp)
+# change output extension to have consistent test across OS arches
+set_target_properties(dynamic_lib_example PROPERTIES SUFFIX ".my_lib")
+add_executable(test_dynamic_library test_dynamic_library.cpp)
+target_link_libraries(test_dynamic_library
+    PRIVATE
+        bagel::bagel
+        GTest::gtest_main
+        ${CMAKE_DL_LIBS}
+)
+gtest_discover_tests(test_dynamic_library)
+
